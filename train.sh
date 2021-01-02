@@ -35,5 +35,5 @@ python -m torch.distributed.launch \
   --output_dir $CHECKPOINT_DIR/nq \
   --learning_rate 2e-5 \
   --num_train_epochs 40 \
-  --dev_batch_size 16 \
+  --dev_batch_size $BATCH_SIZE \
   --val_av_rank_start_epoch 30
