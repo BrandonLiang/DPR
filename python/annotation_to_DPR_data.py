@@ -21,12 +21,12 @@ def convert(args):
   for index, row in indexed_df.iterrows():
     entry = {}
     entry["dataset"] = DATASET
-    entry["question"] = row["title"]
+    entry["question"] = row.index
     entry["answers"] = [] # leave blank for now, may add later
     positive_ctxs = []
     for passage_id, text in zip(row["unique_passage_id"], row["unique_text"]):
       positive_ctxs.append({
-        "title": row["title"],
+        "title": row.index,
         "text": text,
         "score": 1000, # may change later
         "title_score": 1,
