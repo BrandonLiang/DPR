@@ -18,7 +18,9 @@ mkdir -p $DATA_DIR
 CHECKPOINT_DIR=$APP_HOME/checkpoint
 mkdir -p $CHECKPOINT_DIR/vcr
 
-STAGE=2
+CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.1.2900
+
+STAGE=3
 
 if [ $STAGE -le 1 ]; then
   python $PYTHON_DIR/annotation_to_DPR_data.py \
@@ -49,3 +51,9 @@ if [ $STAGE -le 2 ]; then
     --global_loss_buf_sz 1500000
 fi
 
+if [ $STAGE -le 3 ]; then
+  python generate_dense_embeddings.py \
+    --model_file $CHECKPOINT_MODEL \
+    --ctx_file $TSV_DIR/vcr_title_text.tsv \
+    --out_file $DATA_DIR/generated_embeddings
+fi
