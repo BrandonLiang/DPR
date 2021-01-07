@@ -18,9 +18,9 @@ mkdir -p $DATA_DIR
 CHECKPOINT_DIR=$APP_HOME/checkpoint
 mkdir -p $CHECKPOINT_DIR/vcr
 
-CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.1.2900
+CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.33.2900
 
-STAGE=3
+STAGE=4
 
 if [ $STAGE -le 1 ]; then
   python $PYTHON_DIR/annotation_to_DPR_data.py \
@@ -56,4 +56,22 @@ if [ $STAGE -le 3 ]; then
     --model_file $CHECKPOINT_MODEL \
     --ctx_file $TSV_DIR/vcr_title_text.tsv \
     --out_file $DATA_DIR/generated_embeddings
+fi
+
+if [ $STAGE -le 4 ]; then
+  python $PYTHON_DIR/annotation_to_event_answer.py \
+    --input $DATA_DIR/train.json \
+    --output $DATA_DIR/vcr_event_answer.csv
+fi
+
+if [ $STAGE -le 5 ]; then
+  python dense_retriever.py \
+    --model_file $CHECKPOINT_MODEL \
+    --ctx_file $TSV_DIR/vcr_title_text.tsv \
+    --qa_file $DATA_DIR/vcr_event_answer.csv \
+    --encoded_ctx_file $DATA_DIR/generated_embeddings_0.pkl \
+    --out_file $DATA_DIR/retrieval_output.json \
+    --n-docs 100 \
+    --validation_workers 32 \
+    --batch_size 64
 fi
