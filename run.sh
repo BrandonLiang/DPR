@@ -20,7 +20,7 @@ mkdir -p $CHECKPOINT_DIR/vcr
 
 CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.33.2900
 
-STAGE=4
+STAGE=6
 
 if [ $STAGE -le 1 ]; then
   python $PYTHON_DIR/annotation_to_DPR_data.py \
@@ -74,4 +74,13 @@ if [ $STAGE -le 5 ]; then
     --n-docs 100 \
     --validation_workers 32 \
     --batch_size 64
+fi
+
+if [ $STAGE -le 6 ]; then
+  python $PYTHON_DIR/DPR_retrieval_output_to_visual_comet_input.py \
+    --input $DATA_DIR/retrieval_output.json \
+    --prev_train $RETRIEVAL_DIR/embedding_knn_prediction_train.json \
+    --prev_val $RETRIEVAL_DIR/embedding_knn_prediction_val.json \
+    --train_output $RETRIEVAL_DIR/dpr_prediction_train.json \
+    --val_output $RETRIEVAL_DIR/dpr_prediction_val.json
 fi
