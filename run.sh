@@ -62,10 +62,10 @@ if [ $STAGE -le 3 ]; then
     --model_file $CHECKPOINT_MODEL \
     --ctx_file $TSV_DIR/vcr_title_text_train.tsv \
     --out_file $DATA_DIR/generated_embeddings_train
-  python generate_dense_embeddings.py \
-    --model_file $CHECKPOINT_MODEL \
-    --ctx_file $TSV_DIR/vcr_title_text_val.tsv \
-    --out_file $DATA_DIR/generated_embeddings_val
+  #python generate_dense_embeddings.py \
+  #  --model_file $CHECKPOINT_MODEL \
+  #  --ctx_file $TSV_DIR/vcr_title_text_val.tsv \
+  #  --out_file $DATA_DIR/generated_embeddings_val
   #python generate_dense_embeddings.py \
   #  --model_file $CHECKPOINT_MODEL \
   #  --ctx_file $TSV_DIR/vcr_title_text_all.tsv \
@@ -95,7 +95,7 @@ if [ $STAGE -le 5 ]; then
     --model_file $CHECKPOINT_MODEL \
     --ctx_file $TSV_DIR/vcr_title_text_train.tsv \
     --qa_file $DATA_DIR/vcr_event_answer_val.csv \
-    --encoded_ctx_file $DATA_DIR/generated_embeddings_val_0.pkl \
+    --encoded_ctx_file $DATA_DIR/generated_embeddings_train_0.pkl \
     --out_file $DATA_DIR/retrieval_val_output.json \
     --n-docs 100 \
     --validation_workers 32 \
