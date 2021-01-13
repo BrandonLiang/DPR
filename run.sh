@@ -20,15 +20,21 @@ mkdir -p $CHECKPOINT_DIR/vcr
 
 CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.33.2900
 
-STAGE=6
+STAGE=1
 
 if [ $STAGE -le 1 ]; then
   python $PYTHON_DIR/annotation_to_DPR_data.py \
     --train_input $TSV_DIR/train_annots.bsv \
     --val_input $TSV_DIR/val_annots.bsv \
-    --tsv_output $TSV_DIR/vcr_title_text.tsv \
-    --dpr_input $DATA_DIR/train.json
+    --tsv_train_output $TSV_DIR/vcr_title_text_train.tsv \
+    --tsv_val_output $TSV_DIR/vcr_title_text_val.tsv \
+    --tsv_all_output $TSV_DIR/vcr_title_text_all.tsv \
+    --dpr_train_input $DATA_DIR/train.json \
+    --dpr_val_input $DATA_DIR/val.json \
+    --dpr_all_input $DATA_DIR/all.json
 fi
+
+exit 0
 
 if [ $STAGE -le 2 ]; then
   python -m torch.distributed.launch \
@@ -42,7 +48,7 @@ if [ $STAGE -le 2 ]; then
     --batch_size 32 \
     --do_lower_case \
     --train_file ${DATA_DIR}/train.json \
-    --dev_file ${DATA_DIR}/train.json \
+    --dev_file ${DATA_DIR}/val.json \
     --output_dir $CHECKPOINT_DIR/vcr \
     --learning_rate 2e-5 \
     --num_train_epochs 40 \
@@ -54,23 +60,43 @@ fi
 if [ $STAGE -le 3 ]; then
   python generate_dense_embeddings.py \
     --model_file $CHECKPOINT_MODEL \
-    --ctx_file $TSV_DIR/vcr_title_text.tsv \
-    --out_file $DATA_DIR/generated_embeddings
+    --ctx_file $TSV_DIR/vcr_title_text_train.tsv \
+    --out_file $DATA_DIR/generated_embeddings_train
+  python generate_dense_embeddings.py \
+    --model_file $CHECKPOINT_MODEL \
+    --ctx_file $TSV_DIR/vcr_title_text_val.tsv \
+    --out_file $DATA_DIR/generated_embeddings_val
+  #python generate_dense_embeddings.py \
+  #  --model_file $CHECKPOINT_MODEL \
+  #  --ctx_file $TSV_DIR/vcr_title_text_all.tsv \
+  #  --out_file $DATA_DIR/generated_embeddings_all
 fi
 
 if [ $STAGE -le 4 ]; then
   python $PYTHON_DIR/annotation_to_event_answer.py \
     --input $DATA_DIR/train.json \
-    --output $DATA_DIR/vcr_event_answer.csv
+    --output $DATA_DIR/vcr_event_answer_train.csv
+  python $PYTHON_DIR/annotation_to_event_answer.py \
+    --input $DATA_DIR/val.json \
+    --output $DATA_DIR/vcr_event_answer_val.csv
 fi
 
 if [ $STAGE -le 5 ]; then
   python dense_retriever.py \
     --model_file $CHECKPOINT_MODEL \
-    --ctx_file $TSV_DIR/vcr_title_text.tsv \
-    --qa_file $DATA_DIR/vcr_event_answer.csv \
-    --encoded_ctx_file $DATA_DIR/generated_embeddings_0.pkl \
-    --out_file $DATA_DIR/retrieval_output.json \
+    --ctx_file $TSV_DIR/vcr_title_text_train.tsv \
+    --qa_file $DATA_DIR/vcr_event_answer_train.csv \
+    --encoded_ctx_file $DATA_DIR/generated_embeddings_train_0.pkl \
+    --out_file $DATA_DIR/retrieval_train_output.json \
+    --n-docs 100 \
+    --validation_workers 32 \
+    --batch_size 64
+  python dense_retriever.py \
+    --model_file $CHECKPOINT_MODEL \
+    --ctx_file $TSV_DIR/vcr_title_text_train.tsv \
+    --qa_file $DATA_DIR/vcr_event_answer_val.csv \
+    --encoded_ctx_file $DATA_DIR/generated_embeddings_val_0.pkl \
+    --out_file $DATA_DIR/retrieval_val_output.json \
     --n-docs 100 \
     --validation_workers 32 \
     --batch_size 64
@@ -78,9 +104,11 @@ fi
 
 if [ $STAGE -le 6 ]; then
   python $PYTHON_DIR/DPR_retrieval_output_to_visual_comet_input.py \
-    --input $DATA_DIR/retrieval_output.json \
-    --prev_train $RETRIEVAL_DIR/embedding_knn_prediction_train.json \
-    --prev_val $RETRIEVAL_DIR/embedding_knn_prediction_val.json \
-    --train_output $RETRIEVAL_DIR/dpr_prediction_train.json \
-    --val_output $RETRIEVAL_DIR/dpr_prediction_val.json
+    --input $DATA_DIR/retrieval_train_output.json \
+    --prev $RETRIEVAL_DIR/embedding_knn_prediction_train.json \
+    --output $RETRIEVAL_DIR/dpr_prediction_train.json \
+  python $PYTHON_DIR/DPR_retrieval_output_to_visual_comet_input.py \
+    --input $DATA_DIR/retrieval_val.json \
+    --prev $RETRIEVAL_DIR/embedding_knn_prediction_val.json \
+    --output $RETRIEVAL_DIR/dpr_prediction_val.json \
 fi
