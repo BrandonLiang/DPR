@@ -18,9 +18,9 @@ mkdir -p $DATA_DIR
 CHECKPOINT_DIR=$APP_HOME/checkpoint
 mkdir -p $CHECKPOINT_DIR/vcr
 
-CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.33.2900
+CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.36.2583
 
-STAGE=2
+STAGE=6
 
 if [ $STAGE -le 1 ]; then
   python $PYTHON_DIR/annotation_to_DPR_data.py \
@@ -55,8 +55,6 @@ if [ $STAGE -le 2 ]; then
     --val_av_rank_start_epoch 30 \
     --global_loss_buf_sz 1500000
 fi
-
-exit 0
 
 if [ $STAGE -le 3 ]; then
   python generate_dense_embeddings.py \
@@ -107,9 +105,9 @@ if [ $STAGE -le 6 ]; then
   python $PYTHON_DIR/DPR_retrieval_output_to_visual_comet_input.py \
     --input $DATA_DIR/retrieval_train_output.json \
     --prev $RETRIEVAL_DIR/embedding_knn_prediction_train.json \
-    --output $RETRIEVAL_DIR/dpr_prediction_train.json \
+    --output $RETRIEVAL_DIR/dpr_prediction_train.json
   python $PYTHON_DIR/DPR_retrieval_output_to_visual_comet_input.py \
-    --input $DATA_DIR/retrieval_val.json \
+    --input $DATA_DIR/retrieval_val_output.json \
     --prev $RETRIEVAL_DIR/embedding_knn_prediction_val.json \
-    --output $RETRIEVAL_DIR/dpr_prediction_val.json \
+    --output $RETRIEVAL_DIR/dpr_prediction_val.json
 fi
