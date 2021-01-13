@@ -20,7 +20,7 @@ mkdir -p $CHECKPOINT_DIR/vcr
 
 CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.33.2900
 
-STAGE=1
+STAGE=2
 
 if [ $STAGE -le 1 ]; then
   python $PYTHON_DIR/annotation_to_DPR_data.py \
@@ -34,7 +34,6 @@ if [ $STAGE -le 1 ]; then
     --dpr_all_input $DATA_DIR/all.json
 fi
 
-exit 0
 
 if [ $STAGE -le 2 ]; then
   python -m torch.distributed.launch \
@@ -56,6 +55,8 @@ if [ $STAGE -le 2 ]; then
     --val_av_rank_start_epoch 30 \
     --global_loss_buf_sz 1500000
 fi
+
+exit 0
 
 if [ $STAGE -le 3 ]; then
   python generate_dense_embeddings.py \
