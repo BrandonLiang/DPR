@@ -79,10 +79,10 @@ def get_query_encoder(args):
 
     encoder = encoder.question_model
 
-    encoder, _ = setup_for_distributed_mode(encoder, None, args.device, args.n_gpu,
-                                            args.local_rank,
-                                            args.fp16,
-                                            args.fp16_opt_level)
+    #encoder, _ = setup_for_distributed_mode(encoder, None, args.device, args.n_gpu,
+    #                                        args.local_rank,
+    #                                        args.fp16,
+    #                                        args.fp16_opt_level)
     #encoder.eval()
 
     logger.info(args.__dict__)
@@ -104,14 +104,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     add_encoder_params(parser)
-    add_tokenizer_params(parser)
-    add_cuda_params(parser)
+    #add_tokenizer_params(parser)
+    #add_cuda_params(parser)
 
     args = parser.parse_args()
 
     assert args.model_file, 'Please specify --model_file checkpoint to init model weights'
 
-    setup_args_gpu(args)
+    #setup_args_gpu(args)
 
     
     query_encoder = get_query_encoder(args)
