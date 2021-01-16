@@ -21,4 +21,5 @@ mkdir -p $CHECKPOINT_DIR/vcr
 CHECKPOINT_MODEL=$CHECKPOINT_DIR/vcr/dpr_biencoder.36.2583
 
 python get_query_encoder.py \
-  --model_file $CHECKPOINT_MODEL
+  --model_file $CHECKPOINT_MODEL \
+  --save_dir $CHECKPOINT_DIR/vcr/pretrained_query_encoder

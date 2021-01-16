@@ -103,6 +103,8 @@ def get_query_encoder(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--save_dir", type=str, required = True, help = "save location for the query encoder")
+
     add_encoder_params(parser)
     #add_tokenizer_params(parser)
     #add_cuda_params(parser)
@@ -113,5 +115,5 @@ if __name__ == '__main__':
 
     #setup_args_gpu(args)
 
-    
     query_encoder = get_query_encoder(args)
+    query_encoder.save_pretrained(args.save_dir)
