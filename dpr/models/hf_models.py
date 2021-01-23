@@ -119,11 +119,11 @@ class HFBertEncoder(BertModel):
         if self.config.output_hidden_states:
             sequence_output, pooled_output, hidden_states = super().forward(input_ids=input_ids,
                                                                             token_type_ids=token_type_ids,
-                                                                            attention_mask=attention_mask)
+                                                                            attention_mask=attention_mask).to_tuple()
         else:
             hidden_states = None
             sequence_output, pooled_output = super().forward(input_ids=input_ids, token_type_ids=token_type_ids,
-                                                             attention_mask=attention_mask)
+                                                             attention_mask=attention_mask).to_tuple()
 
         pooled_output = sequence_output[:, 0, :]
         if self.encode_proj:
