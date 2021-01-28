@@ -27,7 +27,7 @@ from torch import nn
 
 from dpr.data.qa_validation import calculate_matches
 from dpr.models import init_biencoder_components
-from dpr.models.hf_models import HFBertEncoder
+from dpr.models.hf_models import HFBertEncoder, BertTensorizer, get_bert_tokenizer
 
 from dpr.options import add_encoder_params, setup_args_gpu, print_args, set_encoder_params_from_state, \
     add_tokenizer_params, add_cuda_params
@@ -183,19 +183,22 @@ def iterate_encoded_files(vector_files: list) -> Iterator[Tuple[object, np.array
 
 def main(args):
     encoder = HFBertEncoder.init_encoder(args.query_encoder_location)
+    tensorizer = BertTensorizer(get_bert_tokenizer("bert-base-uncased", do_lower_case = True), 64)
 
     encoder.eval()
 
     # load weights from the model file
     model_to_load = get_model_obj(encoder)
-    logger.info('Loading saved model state ...')
+    #logger.info('Loading saved model state ...')
 
-    prefix_len = len('question_model.')
-    question_encoder_state = {key[prefix_len:]: value for (key, value) in saved_state.model_dict.items() if
-                              key.startswith('question_model.')}
-    model_to_load.load_state_dict(question_encoder_state)
-    vector_size = model_to_load.get_out_size()
-    logger.info('Encoder vector_size=%d', vector_size)
+    #prefix_len = len('question_model.')
+    #question_encoder_state = {key[prefix_len:]: value for (key, value) in saved_state.model_dict.items() if
+    #                          key.startswith('question_model.')}
+    #model_to_load.load_state_dict(question_encoder_state)
+    #vector_size = model_to_load.get_out_size()
+    #logger.info('Encoder vector_size=%d', vector_size)
+
+    vector_size = 768
 
     if args.hnsw_index:
         index = DenseHNSWFlatIndexer(vector_size, args.index_buffer)
