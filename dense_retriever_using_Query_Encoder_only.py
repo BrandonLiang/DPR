@@ -48,7 +48,7 @@ class DenseRetriever(object):
     Does passage retrieving over the provided index and question encoder
     """
     def __init__(self, question_encoder: nn.Module, batch_size: int, tensorizer: Tensorizer, index: DenseIndexer):
-        self.question_encoder = question_encoder
+        self.question_encoder = question_encoder.cuda()
         self.batch_size = batch_size
         self.tensorizer = tensorizer
         self.index = index
